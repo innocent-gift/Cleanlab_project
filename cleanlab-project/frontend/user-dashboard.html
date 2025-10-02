@@ -17,27 +17,80 @@
             --dark-gray: #424242;
             --text-color: #333333;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: var(--text-color);
             background-color: var(--white);
         }
-        
+
         .container {
             width: 90%;
             max-width: 1200px;
             margin: 80px auto 20px;
             padding: 0 15px;
         }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
         
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-img {
+            height: 50px;
+            margin-right: 10px;
+        }
+        
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-menu li {
+            margin-left: 30px;
+        }
+        
+        .nav-menu a {
+            color: var(--text-color);
+            font-weight: 500;
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+        
+        .nav-menu a:hover {
+            color: var(--primary-blue);
+        }
+
         .booking-card {
             background: var(--white);
             border-radius: 8px;
@@ -46,7 +99,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-left: 4px solid var(--primary-blue);
         }
-        
+
         .edit-btn {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -58,11 +111,11 @@
             font-weight: 600;
             transition: background-color 0.3s;
         }
-        
+
         .edit-btn:hover {
             background-color: var(--dark-blue);
         }
-        
+
         .edit-form {
             display: none;
             margin-top: 20px;
@@ -71,17 +124,17 @@
             border-radius: 8px;
             border: 1px solid var(--medium-gray);
         }
-        
+
         .form-group {
             margin-bottom: 15px;
         }
-        
+
         label {
             display: block;
             margin-bottom: 5px;
             font-weight: 500;
         }
-        
+
         input, select, textarea {
             width: 100%;
             padding: 10px;
@@ -90,7 +143,7 @@
             font-size: 14px;
             font-family: inherit;
         }
-        
+
         .email-form {
             background: var(--light-gray);
             padding: 30px;
@@ -101,7 +154,7 @@
     </style>
 </head>
 <body>
-    <!-- Header (same as your main site) -->
+    <!-- Header -->
     <header>
         <div class="container header-container">
             <div class="logo">
@@ -116,6 +169,10 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#about">About Us</a></li>
+                <li><a href="index.html#booking">Booking</a></li>
+                <li><a href="index.html#contact">Contact</a></li>
                 <li><a href="user-dashboard.html">My Bookings</a></li>
             </ul>
         </div>
@@ -123,7 +180,7 @@
 
     <div class="container">
         <h1>My Bookings</h1>
-        
+
         <!-- Email input form -->
         <div class="email-form">
             <h3>View Your Bookings</h3>
@@ -152,11 +209,11 @@
         async function loadUserBookings(email) {
             try {
                 const response = await fetch(`http://localhost:3000/api/bookings/${encodeURIComponent(email)}`);
-                
+
                 if (!response.ok) {
                     throw new Error('No bookings found');
                 }
-                
+
                 const bookings = await response.json();
                 displayBookings(bookings, email);
             } catch (error) {
@@ -172,14 +229,14 @@
         // Display bookings in the UI
         function displayBookings(bookings, email) {
             const bookingsList = document.getElementById('bookingsList');
-            
+
             if (bookings.length === 0) {
                 bookingsList.innerHTML = '<div class="booking-card"><p>No bookings found.</p></div>';
                 return;
             }
-            
+
             bookingsList.innerHTML = `<h2>Your Bookings (${bookings.length})</h2>`;
-            
+
             bookings.forEach(booking => {
                 const bookingCard = document.createElement('div');
                 bookingCard.className = 'booking-card';
@@ -191,7 +248,7 @@
                     <button class="edit-btn" onclick="showEditForm(${booking.id})">
                         <i class="fas fa-edit"></i> Edit Booking
                     </button>
-                    
+
                     <div id="editForm-${booking.id}" class="edit-form">
                         <h4>Edit Your Booking</h4>
                         <form onsubmit="updateBooking(event, ${booking.id})">
@@ -249,42 +306,11 @@
         // Update booking function
         async function updateBooking(event, bookingId) {
             event.preventDefault();
-            
+
             const formData = {
                 name: document.getElementById(`edit-name-${bookingId}`).value,
                 contact: document.getElementById(`edit-contact-${bookingId}`).value,
                 service_type: document.getElementById(`edit-service-${bookingId}`).value,
                 service_date: document.getElementById(`edit-date-${bookingId}`).value,
                 service_time: document.getElementById(`edit-time-${bookingId}`).value,
-                address: document.getElementById(`edit-address-${bookingId}`).value,
-                notes: document.getElementById(`edit-notes-${bookingId}`).value
-            };
-
-            try {
-                const response = await fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert('✅ Booking updated successfully!');
-                    hideEditForm(bookingId);
-                    // Reload the bookings for the current email
-                    const currentEmail = document.getElementById('userEmail').value;
-                    loadUserBookings(currentEmail);
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('❌ Failed to update booking. Please try again.');
-            }
-        }
-    </script>
-</body>
-</html>
+                address: document.getElementById(`edit
